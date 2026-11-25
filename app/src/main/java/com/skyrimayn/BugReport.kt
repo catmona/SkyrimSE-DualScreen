@@ -133,6 +133,8 @@ object BugReport {
                     (main.map { File(skse, it) } + mods).filter { it.isFile }.forEach { f ->
                         add(if (f.name in main) f.name else "mod-logs/${f.name}", f.readBytes().takeLast(if (f.name in main) MAX_LOG_BYTES else MAX_MOD_LOG_BYTES).toByteArray().decodeToString())
                     }
+                    // Wine's own log, when WINE LOG is on (or in a debug build): this game's and the one before.
+                    WineLog.forReport(WineLog.dir(ctx)).forEach { add("wine/${it.name}", WineLog.tail(it, MAX_LOG_BYTES)) }
                 }
                 // A copy beside the mods, so a report can be fetched from the Thor without the share sheet.
                 game?.let { runCatching { out.copyTo(File(it, "SkyrimAYN/last-report.zip"), overwrite = true) } }

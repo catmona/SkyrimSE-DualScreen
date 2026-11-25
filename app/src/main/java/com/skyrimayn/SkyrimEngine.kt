@@ -605,8 +605,9 @@ object SkyrimEngine {
         Timber.i("SkyrimAYN: WINEDLLOVERRIDES=${env.get("WINEDLLOVERRIDES")}")
         c.setEnvVars(env.toString())
         c.saveData()
-        // Debug builds: keep Wine's log (Android/data/com.skyrimayn/files/wine_logs) for diagnosing launches.
-        PrefManager.enableWineDebug = app.gamenative.BuildConfig.DEBUG
+        // Wine's log (Android/data/<package>/files/wine_logs): always in debug builds, and in release builds when the
+        // player turns on WINE LOG (Launcher › Advanced) so a bug report carries it.
+        PrefManager.enableWineDebug = WineLog.wanted(app.gamenative.BuildConfig.DEBUG, LauncherSettings.get(LauncherSettings.wineLog))
         Timber.i("SkyrimAYN: container configured: driver=$driver emulator=${c.emulator} screen=${c.screenSize}")
     }
 

@@ -4459,7 +4459,8 @@ private fun setupXEnvironment(
         val wineLogDir = File(context.getExternalFilesDir(null), "wine_logs")
         wineLogDir.mkdirs()
         logFile = File(wineLogDir, if (debugRun) "debug_run_$appId.log" else "wine_debug.log")
-        if (logFile.exists()) logFile.delete()
+        // A debug run's log is its own; wine_debug.log is kept once as wine_debug.prev.log for the launcher's bug report.
+        if (debugRun) { if (logFile.exists()) logFile.delete() } else com.skyrimayn.WineLog.keepPrevious(logFile)
         if (debugRun) DebugReportUtils.startLogcatCapture(context, appId)
     }
 

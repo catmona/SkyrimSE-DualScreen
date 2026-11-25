@@ -405,6 +405,12 @@ internal fun LauncherPage(gameRunning: Boolean, onBackToGame: () -> Unit, onMods
                 "If the Thor stays above ${SkyrimEngine.HEAT_LIMIT_C}°C, Skyrim saves (\"Overheat Save\") and closes so it can cool down."
             else "Off: Skyrim keeps running however hot the Thor gets. The Thor still slows itself down to stay safe.",
             11.sp, Sky.Faint, 0.5.sp, light = true, maxLines = 2, modifier = Modifier.padding(start = 6.dp, bottom = 4.dp))
+        Selector(LauncherSettings.wineLog, values, label = "WINE LOG")
+        SkyText(
+            if ((values[LauncherSettings.wineLog.key] ?: LauncherSettings.wineLog.default) == "On")
+                "Wine's messages from the last two games go into SEND REPORT. Turn it off once the problem is reported."
+            else "Off: nothing from Wine is kept. Turn it on, play until the problem happens, then SEND REPORT.",
+            11.sp, Sky.Faint, 0.5.sp, light = true, maxLines = 2, modifier = Modifier.padding(start = 6.dp, bottom = 4.dp))
         Selector(LauncherSettings.translator, values)
         val currentDriver = values["driver"] ?: SkyrimEngine.DEFAULT_DRIVER
         SelectorRow("GRAPHICS DRIVER", drivers, currentDriver.takeIf { it in drivers } ?: drivers.firstOrNull() ?: currentDriver, ::driverLabel, { it == SkyrimEngine.DEFAULT_DRIVER }) {

@@ -55,6 +55,8 @@ object LauncherSettings {
     val companion = Choice("companion", "Bottom-screen companion", listOf("On", "Off"), "On")
     /** Quicksave and close Skyrim if the Thor stays dangerously hot (Advanced; off for people pushing settings). */
     val heatGuard = Choice("heat_guard", "Overheat protection", listOf("On", "Off"), "On")
+    /** Keep Wine's own log for bug reports (Advanced). Off: release builds keep nothing from Wine. */
+    val wineLog = Choice("wine_log", "Wine log", listOf("Off", "On"), "Off")
 
     // In-game settings (the companion's settings panel).
     val hudCompass = Choice("hud_compass", "Game compass", listOf("Shown", "Hidden"), "Shown")
@@ -91,7 +93,7 @@ object LauncherSettings {
 
     val language = Choice("language", "Language", I18n.languages.map { it.first }, "English")
 
-    val all = listOf(language, resolution, upscaling, quality, fpsCap, fpsCustom, power, translator, companion, heatGuard, hudCompass, hudBars, hudEnemy, haptics, perfHud, frameGen,
+    val all = listOf(language, resolution, upscaling, quality, fpsCap, fpsCustom, power, translator, companion, heatGuard, wineLog, hudCompass, hudBars, hudEnemy, haptics, perfHud, frameGen,
         pauseMenus, menuSounds, mods, achievementPopup, achievementSound, adultMods, itemSort, gyroAim, gyroSensitivity, gameLightDim)
 
     /** Which parts of the game's HUD to hide, as the plugin's mask (1 compass, 2 bars, 4 enemy health). */
