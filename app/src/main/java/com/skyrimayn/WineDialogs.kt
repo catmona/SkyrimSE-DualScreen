@@ -43,12 +43,12 @@ object WineDialogs {
         return top.takeIf { it.width * 10 < screenW * 9 || it.height * 10 < screenH * 9 }
     }
 
-    /** The topmost mapped Wine top-level window. Popups (override-redirect) and 1-pixel windows don't count. */
-    private fun topmost(w: Win): Win? {
+    /** The topmost mapped Wine top-level window. 1-pixel windows don't count, nor popups (override-redirect) unless [popups]. */
+    private fun topmost(w: Win, popups: Boolean = false): Win? {
         for (c in w.children.asReversed()) {
-            if (!c.mapped || c.overrideRedirect || c.width <= 1 || c.height <= 1) continue
+            if (!c.mapped || (c.overrideRedirect && !popups) || c.width <= 1 || c.height <= 1) continue
             if (c.className.isEmpty() || c.className.equals("explorer.exe", true)) {
-                topmost(c)?.let { return it }
+                topmost(c, popups)?.let { return it }
                 continue
             }
             return c
@@ -67,18 +67,24 @@ object WineDialogs {
 
     /** Looks again after a window is mapped, unmapped, moved, resized or restacked (on the X server's thread). */
     fun refresh(xs: XServer) {
-        val box = runCatching {
-            find(snapshot(xs.windowManager.rootWindow), xs.screenInfo.width.toInt(), xs.screenInfo.height.toInt())
-        }.getOrNull()
+        val root = runCatching { snapshot(xs.windowManager.rootWindow) }
+            .onFailure { Timber.w(it, "SkyrimAYN: couldn't look for a message box") }.getOrNull() ?: return
+        // The top window as Wine left it, popups too, when it changes: a Thor test shows what this check saw.
+        val top = topmost(root, popups = true)?.let { "${it.className} ${it.width}x${it.height}" + if (it.overrideRedirect) " popup" else "" }
+        if (top != lastTop) { lastTop = top; Timber.i("SkyrimAYN: top window ${top ?: "none"}") }
+        val box = find(root, xs.screenInfo.width.toInt(), xs.screenInfo.height.toInt())
         if ((box != null) == _up.value) return
         if (box != null) Timber.i("SkyrimAYN: message box from ${box.className} (${box.width}x${box.height}): pad A = Enter, B = Escape")
         else Timber.i("SkyrimAYN: message box closed")
         _up.value = box != null
     }
 
-    /** A new X server: nothing from the last one is on screen. */
+    private var lastTop: String? = null
+
+    /** A new X server, or the game ended: nothing from the last one is on screen. */
     fun reset() {
         _up.value = false
+        lastTop = null
         held.clear()
     }
 

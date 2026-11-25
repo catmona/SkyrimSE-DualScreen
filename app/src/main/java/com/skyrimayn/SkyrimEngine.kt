@@ -171,6 +171,7 @@ object SkyrimEngine {
     fun onGuestExited(status: Int) {
         launchStartedAt = 0L
         launchToken = 0L
+        WineDialogs.reset()
         val shown = _gameWindow.value
         _gameWindow.value = false
         if (modsStuck) {
