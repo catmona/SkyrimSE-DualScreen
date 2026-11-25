@@ -15,6 +15,7 @@ import app.gamenative.enums.PathType
 import app.gamenative.enums.ReleaseState
 import app.gamenative.service.DownloadService
 import app.gamenative.service.SteamService
+import app.gamenative.testutil.assumePosixFileSystem
 import com.winlator.container.Container
 import com.winlator.xenvironment.ImageFs
 import kotlinx.coroutines.runBlocking
@@ -229,6 +230,7 @@ class SteamUtilsFileSearchTest {
 
     @Test
     fun restoreOriginalExecutable_findsAndRestoresOriginalExe() {
+        assumePosixFileSystem("Wine's dosdevices/a: folder")
         // Set up dosdevices path
         val imageFs = ImageFs.find(context)
         val dosDevicesPath = File(imageFs.wineprefix, "dosdevices/a:")
@@ -258,6 +260,7 @@ class SteamUtilsFileSearchTest {
 
     @Test
     fun restoreOriginalExecutable_respectsMaxDepth() {
+        assumePosixFileSystem("Wine's dosdevices/a: folder")
         // Set up dosdevices path
         val imageFs = ImageFs.find(context)
         val dosDevicesPath = File(imageFs.wineprefix, "dosdevices/a:")
@@ -549,6 +552,7 @@ class SteamUtilsFileSearchTest {
 
     @Test
     fun testReplaceSteamClientDll_sequence_replacesAndRestoresCorrectly() = runBlocking {
+        assumePosixFileSystem("Wine's dosdevices/a: folder")
         // Step 1: Initial Setup - Create fake steam app structure
         val originalDllContent = "original steam_api64.dll content"
         val binDir = File(appDir, "bin")
@@ -789,6 +793,7 @@ class SteamUtilsFileSearchTest {
 
     @Test
     fun testReplaceSteamClientDll_restoreSteamApi_sequence() = runBlocking {
+        assumePosixFileSystem("Wine's dosdevices/a: folder")
         // Step 1: Initial Setup - Create fake steam app structure
         val originalDllContent = "original steam_api64.dll content"
         val binDir = File(appDir, "bin")
@@ -981,6 +986,7 @@ class SteamUtilsFileSearchTest {
 
     @Test
     fun testReplaceSteamApi_restoreSteamApi_sequence() = runBlocking {
+        assumePosixFileSystem("Wine's dosdevices/a: folder")
         // Step 1: Initial Setup - Create fake steam app structure
         val originalDllContent = "original steam_api64.dll content"
         val binDir = File(appDir, "bin")

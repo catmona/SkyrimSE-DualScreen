@@ -41,12 +41,12 @@ class GOGConstantsTest {
     @Test
     fun testGetGameInstallPath_pathStructure() {
         val path = GOGConstants.getGameInstallPath("Another Game 2026")
-        assertEquals(path, "/tmp/internal/GOG/games/common/Another Game 2026")
+        assertEquals(File("/tmp/internal/GOG/games/common/Another Game 2026").path, path)
     }
 
     @Test
     fun testSanitizationSpecialChars() {
         val path = GOGConstants.getGameInstallPath("G%ame@With^Special*Chars")
-        assertEquals(path, "/tmp/internal/GOG/games/common/GameWithSpecialChars")
+        assertEquals(File("/tmp/internal/GOG/games/common/GameWithSpecialChars").path, path)
     }
 }

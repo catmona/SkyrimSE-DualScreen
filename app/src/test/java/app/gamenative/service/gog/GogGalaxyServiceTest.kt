@@ -1,5 +1,6 @@
 package app.gamenative.service.gog
 
+import app.gamenative.testutil.assumePosixFileSystem
 import com.winlator.core.WineRegistryEditor
 import java.io.File
 import kotlin.io.path.createTempDirectory
@@ -30,6 +31,7 @@ class GogGalaxyServiceTest {
 
     @Test
     fun writeRegistry_addsServiceAndClientPathKeys() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         systemReg.writeText(SYSTEM_REG_FIXTURE)
 
         assertTrue(GogGalaxyService.writeRegistry(systemReg))
@@ -54,6 +56,7 @@ class GogGalaxyServiceTest {
 
     @Test
     fun writeRegistry_isIdempotent() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         systemReg.writeText(SYSTEM_REG_FIXTURE)
         assertTrue(GogGalaxyService.writeRegistry(systemReg))
         val first = systemReg.readText()
@@ -64,6 +67,7 @@ class GogGalaxyServiceTest {
 
     @Test
     fun writeRegistry_repairsChangedValue() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         systemReg.writeText(SYSTEM_REG_FIXTURE)
         assertTrue(GogGalaxyService.writeRegistry(systemReg))
         WineRegistryEditor(systemReg).use { it.setDwordValue(GogGalaxyService.SERVICE_KEY, "Start", 4) }
@@ -94,16 +98,16 @@ class GogGalaxyServiceTest {
             tmpDir = tmp,
         )
 
-        assertEquals(listOf("/data/lib/libcomet.so", "--username", "player"), command.args)
+        assertEquals(listOf(File("/data/lib/libcomet.so").absolutePath, "--username", "player"), command.args)
         assertEquals(
             mapOf(
                 "COMET_ACCESS_TOKEN" to "access",
                 "COMET_REFRESH_TOKEN" to "refresh",
                 "COMET_USER_ID" to "1234",
-                "HOME" to "/data/files/comet",
-                "XDG_DATA_HOME" to "/data/files/comet/.local/share",
-                "XDG_CONFIG_HOME" to "/data/files/comet/.config",
-                "TMPDIR" to "/data/cache/comet-tmp",
+                "HOME" to home.absolutePath,
+                "XDG_DATA_HOME" to File(home, ".local/share").absolutePath,
+                "XDG_CONFIG_HOME" to File(home, ".config").absolutePath,
+                "TMPDIR" to tmp.absolutePath,
                 "COMET_LOG" to "info",
             ),
             command.env,

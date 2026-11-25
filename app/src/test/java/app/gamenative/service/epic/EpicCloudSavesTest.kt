@@ -92,6 +92,7 @@ class EpicCloudSavesTest {
         val metadataPath = File(wineUserDir, "AppData/locallow/ZAUM Studio/Disco Elysium/SaveGames")
             .absolutePath
             .replace('\\', '/')
+            .replaceFirst(Regex("^[A-Za-z]:"), "") // the app only sees Linux style absolute paths: drop the drive letter
 
         val resolved = FileUtils.resolveCaseInsensitive(File("/"), metadataPath)
 

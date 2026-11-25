@@ -1,6 +1,7 @@
 package app.gamenative.utils
 
 import app.gamenative.gamefixes.CabArchive
+import app.gamenative.testutil.assumePosixFileSystem
 import com.winlator.container.Container
 import com.winlator.core.WineRegistryEditor
 import java.io.ByteArrayOutputStream
@@ -687,6 +688,7 @@ class RedistInstallerExtractorTest {
 
     @Test
     fun recordVcRuntimeUsesOnlyThePlacedDlls() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         RedistInstallerExtractor.clearCache()
         val prefixDir = temporary.newFolder("prefix")
         val systemReg = File(prefixDir, "system.reg").apply { writeText("WINE REGISTRY Version 2\n\n") }

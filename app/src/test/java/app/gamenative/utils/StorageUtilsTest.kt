@@ -1,5 +1,6 @@
 package app.gamenative.utils
 
+import app.gamenative.testutil.assumePosixFileSystem
 import java.io.File
 import java.nio.file.Files
 import java.util.UUID
@@ -17,6 +18,7 @@ class StorageUtilsTest {
 
     @Test
     fun getFolderSize_skipsHardlinkedFiles() {
+        assumePosixFileSystem("hard link counts need the unix attribute view")
         val folder = tempFolder.newFolder("container")
         val shared = tempFolder.newFolder("shared")
         File(folder, "private.bin").writeBytes(ByteArray(1024))

@@ -2,6 +2,7 @@ package app.gamenative.utils
 
 import app.gamenative.data.GameSource
 import app.gamenative.enums.Marker
+import app.gamenative.testutil.assumePosixFileSystem
 import com.winlator.container.Container
 import io.mockk.every
 import io.mockk.mockk
@@ -68,6 +69,7 @@ class PreInstallStepsTest {
 
     @Test
     fun getPreInstallCommands_buildsWrappedGuestCommand_forDetectedInstallerStep() {
+        assumePosixFileSystem("a Windows path can't go in the container drives string")
         File(gameDir, "UbisoftConnectInstaller.exe").writeText("dummy")
 
         val result = PreInstallSteps.getPreInstallCommands(
@@ -90,6 +92,7 @@ class PreInstallStepsTest {
 
     @Test
     fun getPreInstallCommands_resetsMarkers_whenContainerVariantChanged() {
+        assumePosixFileSystem("a Windows path can't go in the container drives string")
         File(gameDir, "UbisoftConnectInstaller.exe").writeText("dummy")
         MarkerUtils.addMarker(gameDir.absolutePath, Marker.UBISOFT_CONNECT_INSTALLED)
 
@@ -115,6 +118,7 @@ class PreInstallStepsTest {
 
     @Test
     fun markStepDone_createsSelectedMarkerFile() {
+        assumePosixFileSystem("a Windows path can't go in the container drives string")
         PreInstallSteps.markStepDone(container, Marker.OPENAL_INSTALLED)
 
         assertTrue(File(gameDir, Marker.OPENAL_INSTALLED.fileName).exists())
@@ -122,6 +126,7 @@ class PreInstallStepsTest {
 
     @Test
     fun markAllDone_createsAllPreInstallMarkerFiles() {
+        assumePosixFileSystem("a Windows path can't go in the container drives string")
         PreInstallSteps.markAllDone(container)
 
         val expectedMarkers = listOf(

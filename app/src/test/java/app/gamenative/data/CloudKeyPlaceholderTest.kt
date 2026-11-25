@@ -9,8 +9,12 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import java.io.File
 
 class CloudKeyPlaceholderTest {
+
+    // Paths built through java.io.File / java.nio use the OS separator; the keys are compared with "/".
+    private fun String.slashed() = replace(File.separatorChar, '/')
 
     @Before
     fun setUp() {
@@ -62,9 +66,9 @@ class CloudKeyPlaceholderTest {
             cloudRoot = pattern.uploadRoot,
             cloudPath = pattern.uploadPath,
         )
-        assertEquals("%WinMyDocuments%Square Enix/Just Cause 3/Saves/76561198000000001", file.prefix)
-        assertEquals("%WinMyDocuments%Square Enix/Just Cause 3/Saves/76561198000000001/save.dat", file.prefixPath)
-        assertEquals("Square Enix/Just Cause 3/Saves/76561198000000001/", file.substitutedPath)
+        assertEquals("%WinMyDocuments%Square Enix/Just Cause 3/Saves/76561198000000001", file.prefix.slashed())
+        assertEquals("%WinMyDocuments%Square Enix/Just Cause 3/Saves/76561198000000001/save.dat", file.prefixPath.slashed())
+        assertEquals("Square Enix/Just Cause 3/Saves/76561198000000001/", file.substitutedPath.slashed())
     }
 
     @Test
@@ -77,11 +81,11 @@ class CloudKeyPlaceholderTest {
             sha = ByteArray(0),
             cloudPath = cloudPath,
         )
-        assertEquals(entry("save/{64BitSteamID}").prefixPath, entry("save/{64BitSteamID}/.").prefixPath)
+        assertEquals(entry("save/{64BitSteamID}").prefixPath.slashed(), entry("save/{64BitSteamID}/.").prefixPath.slashed())
         assertEquals(
-            entry("Square Enix/Just Cause 3/Saves/{64BitSteamID}/").prefixPath,
-            entry("Square Enix\\Just Cause 3\\Saves\\{64BitSteamID}\\").prefixPath,
+            entry("Square Enix/Just Cause 3/Saves/{64BitSteamID}/").prefixPath.slashed(),
+            entry("Square Enix\\Just Cause 3\\Saves\\{64BitSteamID}\\").prefixPath.slashed(),
         )
-        assertEquals("%GameInstall%save/76561198000000001/profile0.ojs", entry("save/{64BitSteamID}/.").prefixPath)
+        assertEquals("%GameInstall%save/76561198000000001/profile0.ojs", entry("save/{64BitSteamID}/.").prefixPath.slashed())
     }
 }

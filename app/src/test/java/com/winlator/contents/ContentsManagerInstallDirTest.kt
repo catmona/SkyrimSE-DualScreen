@@ -2,6 +2,7 @@ package com.winlator.contents
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import app.gamenative.testutil.assumePosixFileSystem
 import java.io.File
 import org.json.JSONArray
 import org.json.JSONObject
@@ -58,6 +59,7 @@ class ContentsManagerInstallDirTest {
 
     @Test
     fun newInstallLandsInVersionedFolder() {
+        assumePosixFileSystem("installing renames a folder over an existing one")
         val mgr = ContentsManager(context)
         mgr.syncContents()
 
@@ -78,6 +80,7 @@ class ContentsManagerInstallDirTest {
 
     @Test
     fun twoVersionCodesCoexist() {
+        assumePosixFileSystem("installing renames a folder over an existing one")
         writeProfile(File(typeDir, "0.4.2"), "0.4.2", 1)
         val mgr = ContentsManager(context)
         mgr.syncContents()

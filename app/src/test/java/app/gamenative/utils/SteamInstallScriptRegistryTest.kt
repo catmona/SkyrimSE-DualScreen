@@ -1,5 +1,6 @@
 package app.gamenative.utils
 
+import app.gamenative.testutil.assumePosixFileSystem
 import app.gamenative.utils.SteamInstallScriptRegistry.Entry
 import app.gamenative.utils.SteamInstallScriptRegistry.Hive
 import app.gamenative.utils.SteamInstallScriptRegistry.ValueType
@@ -151,6 +152,7 @@ class SteamInstallScriptRegistryTest {
 
     @Test
     fun write_createsRegFilesAndStoresEachValueType() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         val entries = SteamInstallScriptRegistry.parse(SPORE_SCRIPT, "A:\\")
 
         SteamInstallScriptRegistry.write(prefixDir, entries)
@@ -338,6 +340,7 @@ class SteamInstallScriptRegistryTest {
 
     @Test
     fun parseRunProcessMarks_writesDwordsIntoBothViews() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         val systemReg = File(prefixDir, "system.reg")
         systemReg.writeText("WINE REGISTRY Version 2\n\n")
         val entries = SteamInstallScriptRegistry.parseRunProcessMarks(
@@ -385,6 +388,7 @@ class SteamInstallScriptRegistryTest {
 
     @Test
     fun applyRunProcessMarks_marksGameAndCommonRedistScriptsAndReappliesWhenScriptChanges() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         val systemReg = File(prefixDir, "system.reg")
         systemReg.writeText("WINE REGISTRY Version 2\n\n")
         val gameDir = File(prefixDir, "game").apply { mkdirs() }
@@ -466,6 +470,7 @@ class SteamInstallScriptRegistryTest {
 
     @Test
     fun writeRedistMarks_writesOnceAndStampsPrefix() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         val systemReg = File(prefixDir, "system.reg")
         systemReg.writeText("WINE REGISTRY Version 2\n\n")
 
@@ -685,6 +690,7 @@ class SteamInstallScriptRegistryTest {
 
     @Test
     fun raiseVcRuntimeVersion_writesEveryArchInBothViewsWithoutDowngrading() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         val systemReg = File(prefixDir, "system.reg")
         systemReg.writeText("WINE REGISTRY Version 2\n\n")
         val runtimes = "Microsoft\\VisualStudio\\14.0\\VC\\Runtimes"
@@ -762,6 +768,7 @@ class SteamInstallScriptRegistryTest {
 
     @Test
     fun applyRunProcessMarks_doesNotLowerAnExistingVersionValue() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         val gameDir = File(prefixDir, "game").apply { mkdirs() }
         val script = File(gameDir, "installscript.vdf").apply {
             writeText(
@@ -800,6 +807,7 @@ class SteamInstallScriptRegistryTest {
 
     @Test
     fun applyRunProcessMarks_reappliesWhenAStampedMarkIsMissing() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         val gameDir = File(prefixDir, "game").apply { mkdirs() }
         val script = File(gameDir, "installscript.vdf").apply {
             writeText(runProcessScript("VCRedist", "HKLM\\Software\\Valve\\Steam\\Apps\\$APP_ID"))
@@ -821,6 +829,7 @@ class SteamInstallScriptRegistryTest {
 
     @Test
     fun clearPrefixStamps_removesEveryMarkStampSoAFreshPrefixIsRemarked() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         val systemReg = File(prefixDir, "system.reg")
         systemReg.writeText("WINE REGISTRY Version 2\n\n")
         assertTrue(SteamInstallScriptRegistry.writeRedistMarks(prefixDir))
@@ -1004,6 +1013,7 @@ class SteamInstallScriptRegistryTest {
 
     @Test
     fun applyRunProcessMarks_keepsDwordsWithTheHighBitSet() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         val gameDir = File(prefixDir, "game").apply { mkdirs() }
         val script = File(gameDir, "installscript.vdf").apply {
             writeText(runProcessScript("VCRedist", "HKLM\\Software\\Studio\\Game"))
@@ -1026,6 +1036,7 @@ class SteamInstallScriptRegistryTest {
 
     @Test
     fun applyRunProcessMarks_reappliesWhenAStampedMarkWasLoweredOrAUserMarkIsMissing() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         val gameDir = File(prefixDir, "game").apply { mkdirs() }
         val script = File(gameDir, "installscript.vdf").apply {
             writeText(runProcessScript("VCRedist", "HKCU\\Software\\Studio\\Game"))
