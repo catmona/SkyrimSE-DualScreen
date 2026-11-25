@@ -871,7 +871,18 @@ object ModManager {
                 withContext(Dispatchers.Main) { openNexus() }
                 return@launch
             }
-            if (plugins.isNotEmpty()) LoadOrder.writeImported(appContext, plugins)
+            if (plugins.isNotEmpty()) {
+                // Stored first, so mods that arrive before the order is applied (or before a game folder is set) take their place from it.
+                LoadOrder.writeImported(appContext, plugins)
+                gameDir()?.let { g ->
+                    scope.launch {
+                        runCatching { lock.withLock { LoadOrder.applyImported(appContext, g.path, plugins, modsToCome = true) } }.onFailure {
+                            Timber.w(it, "SkyrimAYN: applying the list's load order failed")
+                            _notice.value = "Couldn't apply the list's load order: ${it.message}"
+                        }
+                    }
+                }
+            }
             val busyIds = _downloads.value.filter { it.state == DlState.DOWNLOADING }.map(::downloadModId).toSet() + queuedMods()
             val wanted = entries.filter { it.nexusId > 0 && it.nexusId !in installedNexusIds() && it.nexusId !in busyIds }
             var opened = false
@@ -930,7 +941,7 @@ object ModManager {
                     profile?.let { File(it, "plugins.txt") }?.takeIf { it.isFile }?.readLines()?.map { it.trim() }
                         ?.filter { it.isNotEmpty() && !it.startsWith("#") }
                         ?.map { it.removePrefix("*") to it.startsWith("*") }
-                        ?.let { LoadOrder.writeImported(appContext, it) }
+                        ?.let { LoadOrder.applyImported(appContext, game.path, it, modsToCome = false) }
                     _notice.value = "$imported mods imported"
                 } catch (e: Exception) {
                     Timber.w(e, "SkyrimAYN: folder import failed")
