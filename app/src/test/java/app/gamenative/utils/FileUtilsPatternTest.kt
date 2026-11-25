@@ -21,6 +21,22 @@ class FileUtilsPatternTest {
         FileUtils.findFilesRecursive(dir, pattern, 5).map { it.name }.toList().sorted()
 
     @Test
+    fun recursiveSearchLeavesOutSkippedFolders() {
+        val dir = Files.createTempDirectory("fileutils-skip")
+        Files.createDirectories(dir.resolve("_CommonRedist/DirectX"))
+        Files.createFile(dir.resolve("_CommonRedist/DirectX/DXSETUP.exe"))
+        Files.createDirectories(dir.resolve("Data/SomeMod"))
+        Files.createFile(dir.resolve("Data/SomeMod/DXSETUP.exe"))
+
+        val all = FileUtils.findFilesRecursive(dir, "DXSETUP.exe", 5).map { dir.relativize(it).toString().replace('\\', '/') }.toList().sorted()
+        assertEquals(listOf("Data/SomeMod/DXSETUP.exe", "_CommonRedist/DirectX/DXSETUP.exe"), all)
+
+        val skipped = FileUtils.findFilesRecursive(dir, "DXSETUP.exe", 5, skipDirectory = { it.parent == dir && it.name == "Data" })
+            .map { dir.relativize(it).toString().replace('\\', '/') }.toList()
+        assertEquals(listOf("_CommonRedist/DirectX/DXSETUP.exe"), skipped)
+    }
+
+    @Test
     fun questionMarkStandsForOneCharacter() {
         val dir = dirWith("FFXII_000", "FFXII_001", "FFXII_00", "GameSetting.ini")
 

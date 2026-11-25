@@ -116,15 +116,16 @@ object FileUtils {
      * @param maxDepth How deep to go in the directory tree, a value of -1 keeps going
      * @param action The action to perform on each file
      */
-    fun walkThroughPath(rootPath: Path, maxDepth: Int = 0, action: (Path) -> Unit) {
+    fun walkThroughPath(rootPath: Path, maxDepth: Int = 0, skipDirectory: (Path) -> Boolean = { false }, action: (Path) -> Unit) {
         if (!Files.exists(rootPath) || !Files.isDirectory(rootPath)) return
         Files.list(rootPath).use { fileList ->
             fileList.forEach {
                 action(it)
-                if (maxDepth != 0 && it.exists() && it.isDirectory()) {
+                if (maxDepth != 0 && it.exists() && it.isDirectory() && !skipDirectory(it)) {
                     walkThroughPath(
                         rootPath = it,
                         maxDepth = if (maxDepth > 0) maxDepth - 1 else maxDepth,
+                        skipDirectory = skipDirectory,
                         action = action,
                     )
                 }
@@ -157,7 +158,6 @@ object FileUtils {
                 false
             } else {
                 val fileName = path.name
-                Timber.i("Checking $fileName for pattern $pattern")
                 var startIndex = 0
                 !patternParts.map {
                     val index = indexOfPart(fileName, it, startIndex)
@@ -175,6 +175,7 @@ object FileUtils {
         pattern: String,
         maxDepth: Int = -1,
         includeDirectories: Boolean = false,
+        skipDirectory: (Path) -> Boolean = { false },
     ): Stream<Path> {
         val patternParts = pattern.split("*").filter { it.isNotEmpty() }
         Timber.i("$pattern -> $patternParts (recursive, depth=$maxDepth)")
@@ -192,19 +193,20 @@ object FileUtils {
             return true
         }
 
-        walkThroughPath(rootPath, maxDepth) { path ->
+        var checked = 0
+        walkThroughPath(rootPath, maxDepth, skipDirectory) { path ->
             if (path.isDirectory()) {
                 if (includeDirectories && matches(path.name)) {
                     results.add(path)
                 }
             } else {
-                val fileName = path.name
-                Timber.i("Checking $fileName for pattern $pattern (recursive)")
-                if (matches(fileName)) {
+                checked++
+                if (matches(path.name)) {
                     results.add(path)
                 }
             }
         }
+        Timber.i("$pattern: ${results.size} of $checked file(s) match under $rootPath")
 
         return results.stream()
     }
