@@ -1,6 +1,7 @@
 package app.gamenative.utils
 
 import app.gamenative.data.GameSource
+import app.gamenative.testutil.assumePosixFileSystem
 import com.winlator.container.Container
 import com.winlator.core.WineRegistryEditor
 import com.winlator.core.WineUtils
@@ -116,7 +117,7 @@ class PhysXLayoutTest {
         touch("Engine/Extras/Redist/en-us/UE4PrereqSetup_x64.exe")
         touch("_CommonRedist/PhysX/PhysX_9.23.1019_SystemSoftware.exe")
 
-        val candidates = PhysXLayout.candidateInstallers(GameSource.CUSTOM_GAME, gameDir, null).map { it.relativeTo(gameDir).path }
+        val candidates = PhysXLayout.candidateInstallers(GameSource.CUSTOM_GAME, gameDir, null).map { it.relativeTo(gameDir).path.replace(File.separatorChar, '/') }
 
         assertEquals(
             listOf(
@@ -131,6 +132,7 @@ class PhysXLayoutTest {
 
     @Test
     fun applyForLaunch_enablesPhysxComponent() {
+        assumePosixFileSystem("a Windows path can't go in the container drives string")
         touch("_CommonRedist/PhysX/PhysX_9.23.1019_SystemSoftware.exe")
         every { container.winComponents } returns "direct3d=1,vcrun2010=1"
 
@@ -169,6 +171,7 @@ class PhysXLayoutTest {
 
     @Test
     fun applyRegistry_writesBothRegistryViews() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         PhysXLayout.applyRegistry(systemReg, true)
 
         WineRegistryEditor(systemReg).use { editor ->
@@ -208,6 +211,7 @@ class PhysXLayoutTest {
 
     @Test
     fun setWinComponentRegistryKeys_routesPhysxToLayout() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         WineUtils.setWinComponentRegistryKeys(systemReg, PhysXLayout.COMPONENT, true, false)
 
         WineRegistryEditor(systemReg).use { editor ->

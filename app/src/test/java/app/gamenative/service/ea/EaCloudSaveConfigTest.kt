@@ -2,6 +2,7 @@ package app.gamenative.service.ea
 
 import android.app.Application
 import androidx.test.core.app.ApplicationProvider
+import app.gamenative.testutil.assumePosixFileSystem
 import com.winlator.xenvironment.ImageFs
 import io.mockk.coEvery
 import io.mockk.mockkObject
@@ -253,6 +254,7 @@ class EaCloudSaveConfigTest {
 
     @Test
     fun `folders that resolve outside drive c are skipped`() {
+        assumePosixFileSystem("symlinks")
         val outside = Files.createTempDirectory("ea_cloud_outside").toFile()
         try {
             write(outside, "Electronic Arts/The Sims 4/saves/Slot.save")

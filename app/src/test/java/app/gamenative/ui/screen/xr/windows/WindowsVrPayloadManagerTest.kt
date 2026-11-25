@@ -1,6 +1,7 @@
 package app.gamenative.ui.screen.xr.windows
 
 import android.app.Application
+import app.gamenative.testutil.assumePosixFileSystem
 import com.winlator.container.Container
 import io.mockk.every
 import io.mockk.mockk
@@ -39,6 +40,7 @@ class WindowsVrPayloadManagerTest {
 
     @Test
     fun installOpenComposite_reusesCachedDirectoriesUntilTheyGoStale() {
+        assumePosixFileSystem("a Windows path can't go in the container drives string")
         val first = File(gameRoot, "first").apply { mkdirs() }
         val firstDll = File(first, "openvr_api.dll").apply { writeBytes(fakePe(0x8664)) }
         val original = firstDll.readBytes()

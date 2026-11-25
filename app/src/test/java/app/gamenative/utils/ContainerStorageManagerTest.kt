@@ -1,6 +1,7 @@
 package app.gamenative.utils
 
 import app.gamenative.data.GameSource
+import app.gamenative.testutil.assumePosixFileSystem
 import java.io.File
 import java.nio.file.Files
 import org.junit.Assert.assertEquals
@@ -40,6 +41,7 @@ class ContainerStorageManagerTest {
 
     @Test
     fun getContainerDirectorySize_skipsHardlinkedFiles() {
+        assumePosixFileSystem("hard link counts need the unix attribute view")
         val container = tempFolder.newFolder("container")
         val shared = tempFolder.newFolder("shared")
         File(container, "private.bin").writeBytes(ByteArray(1024))

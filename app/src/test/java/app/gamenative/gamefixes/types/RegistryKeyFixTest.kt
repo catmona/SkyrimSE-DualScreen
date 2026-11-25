@@ -2,6 +2,7 @@ package app.gamenative.gamefixes
 
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
+import app.gamenative.testutil.assumePosixFileSystem
 import com.winlator.container.Container
 import com.winlator.core.WineRegistryEditor
 import com.winlator.xenvironment.ImageFs
@@ -66,6 +67,7 @@ class RegistryKeyFixTest {
 
     @Test
     fun apply_writesMissingValues_andResolvesInstallPathPlaceholder() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         if (!systemRegFile.exists()) {
             systemRegFile.writeText("REGEDIT4\n")
         }
@@ -90,6 +92,7 @@ class RegistryKeyFixTest {
 
     @Test
     fun apply_keepsExistingRegistryValue_andDoesNotOverwrite() {
+        assumePosixFileSystem("WineRegistryEditor renames over an existing file")
         if (!systemRegFile.exists()) {
             systemRegFile.writeText("REGEDIT4\n")
         }

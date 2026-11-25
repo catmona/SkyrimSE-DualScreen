@@ -1,6 +1,7 @@
 package com.winlator.xenvironment
 
 import androidx.test.core.app.ApplicationProvider
+import app.gamenative.testutil.assumePosixFileSystem
 import com.winlator.core.FileUtils
 import java.io.File
 import java.lang.reflect.Method
@@ -136,6 +137,7 @@ class ImageFsInstallerTest {
 
     @Test
     fun ensureProtonVersionSymlink_replacesDanglingSymlinkAtActivePath() {
+        assumePosixFileSystem("symlinks")
         val rootDir = File(filesDir, "imagefs-root-dangling-proton-${System.nanoTime()}").apply { mkdirs() }
         val activeProtonVersion = "proton-ge-9-3"
         val optDir = File(rootDir, "opt").apply { mkdirs() }

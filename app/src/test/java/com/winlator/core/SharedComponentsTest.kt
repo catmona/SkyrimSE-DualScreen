@@ -1,5 +1,6 @@
 package com.winlator.core
 
+import app.gamenative.testutil.assumePosixFileSystem
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.LinkOption
@@ -32,6 +33,7 @@ class SharedComponentsTest {
 
     @Test
     fun materialize_copiesPrivateFiles() {
+        assumePosixFileSystem("hard link counts need the unix attribute view")
         val shared = sharedTree()
         val dest = tmp.newFolder("dest")
 
@@ -65,6 +67,7 @@ class SharedComponentsTest {
 
     @Test
     fun materialize_copiesConfigFilesToo() {
+        assumePosixFileSystem("hard link counts need the unix attribute view")
         val shared = sharedTree()
         File(shared, "syswow64/dxvk.conf").writeText("conf")
         val dest = tmp.newFolder("dest")

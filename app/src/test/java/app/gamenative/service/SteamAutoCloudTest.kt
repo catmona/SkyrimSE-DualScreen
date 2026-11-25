@@ -17,6 +17,7 @@ import app.gamenative.enums.OS
 import app.gamenative.enums.PathType
 import app.gamenative.enums.ReleaseState
 import app.gamenative.enums.SaveLocation
+import app.gamenative.testutil.assumePosixFileSystem
 import app.gamenative.utils.Net
 import java.nio.file.Paths
 import kotlin.io.path.pathString
@@ -83,6 +84,7 @@ class SteamAutoCloudTest {
 
     @Before
     fun setUp() {
+        assumePosixFileSystem("Wine's dosdevices/c: folder")
         mockkObject(Net)
         mockParallelHttpClient = mockk(relaxed = true)
         // Safe default: relaxed client returns null for newCall(), causing downloads to no-op.
@@ -282,7 +284,7 @@ class SteamAutoCloudTest {
         }
 
         // Close database
-        db.close()
+        if (::db.isInitialized) db.close()
 
         // Give file system a moment to release locks (especially important in CI)
         Thread.sleep(50)

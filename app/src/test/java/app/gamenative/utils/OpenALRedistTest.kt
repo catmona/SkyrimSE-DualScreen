@@ -1,5 +1,6 @@
 package app.gamenative.utils
 
+import app.gamenative.testutil.assumePosixFileSystem
 import com.winlator.container.Container
 import com.winlator.core.envvars.EnvVars
 import io.mockk.every
@@ -76,6 +77,7 @@ class OpenALRedistTest {
 
     @Test
     fun applyForLaunch_addsOverrideAndKeepsOtherEnvVars() {
+        assumePosixFileSystem("a Windows path can't go in the container drives string")
         touch("_CommonRedist/OpenAL/oalinst.exe")
         every { container.envVars } returns "WINEESYNC=1 WINEDLLOVERRIDES=dinput8=n,b"
 

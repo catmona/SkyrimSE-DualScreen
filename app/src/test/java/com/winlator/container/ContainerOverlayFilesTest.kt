@@ -1,5 +1,6 @@
 package com.winlator.container
 
+import app.gamenative.testutil.assumePosixFileSystem
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.LinkOption
@@ -36,6 +37,7 @@ class ContainerOverlayFilesTest {
 
     @Test
     fun prune_removesIdenticalAndProtonLinkedFiles_keepsTheRest() {
+        assumePosixFileSystem("hard link counts need the unix attribute view")
         val base = tmp.newFolder("base", ".wine")
         val protonLib = tmp.newFolder("proton", "lib", "wine", "aarch64-windows")
         val components = tmp.newFolder("components")
@@ -86,6 +88,7 @@ class ContainerOverlayFilesTest {
 
     @Test
     fun migrate_storesCanonicalBasePathWhenReachedThroughSymlink() {
+        assumePosixFileSystem("symlinks")
         val realProton = tmp.newFolder("imagefs_shared", "proton", "proton-9.0-arm64ec")
         val base = File(realProton, "base_prefix/.wine").apply { mkdirs() }
         val opt = tmp.newFolder("imagefs", "opt")
@@ -212,6 +215,7 @@ class ContainerOverlayFilesTest {
 
     @Test
     fun createThinPrefix_marksDosdevicesOpaque() {
+        assumePosixFileSystem("Wine's dosdevices/c: symlinks")
         val base = tmp.newFolder("base", ".wine")
         Files.createDirectories(File(base, "dosdevices").toPath())
         Files.createSymbolicLink(File(base, "dosdevices/c:").toPath(), Paths.get("../drive_c"))
@@ -229,6 +233,7 @@ class ContainerOverlayFilesTest {
 
     @Test
     fun migrate_marksDosdevicesOpaque() {
+        assumePosixFileSystem("Wine's dosdevices/c: symlinks")
         val base = tmp.newFolder("base", ".wine")
         Files.createDirectories(File(base, "dosdevices").toPath())
         Files.createSymbolicLink(File(base, "dosdevices/e:").toPath(), Paths.get("/sdcard"))
@@ -243,6 +248,7 @@ class ContainerOverlayFilesTest {
 
     @Test
     fun basePrefix_normalizeKeepsOnlyCAndZDrives() {
+        assumePosixFileSystem("Wine's dosdevices/c: symlinks")
         val wine = tmp.newFolder("base_prefix", ".wine")
         val dosdevices = File(wine, "dosdevices").apply { mkdirs() }
         Files.createSymbolicLink(File(dosdevices, "c:").toPath(), Paths.get("../drive_c"))
@@ -258,6 +264,7 @@ class ContainerOverlayFilesTest {
 
     @Test
     fun basePrefix_upgradesVersion2BaseByTrimmingDosdevices() {
+        assumePosixFileSystem("Wine's dosdevices/c: symlinks")
         val baseDir = tmp.newFolder("base_prefix")
         val dosdevices = File(baseDir, ".wine/dosdevices").apply { mkdirs() }
         Files.createSymbolicLink(File(dosdevices, "c:").toPath(), Paths.get("../drive_c"))
@@ -273,6 +280,7 @@ class ContainerOverlayFilesTest {
 
     @Test
     fun createThinPrefix_copiesSkeletonFromBase() {
+        assumePosixFileSystem("Wine's dosdevices/c: symlinks")
         val base = tmp.newFolder("base", ".wine")
         write(base, "system.reg", "sys")
         write(base, "user.reg", "usr")
