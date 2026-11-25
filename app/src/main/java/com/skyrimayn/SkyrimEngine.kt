@@ -139,6 +139,8 @@ object SkyrimEngine {
 
     /** True while a SkyrimSE.exe process runs in the engine (the app's own processes, read from /proc). */
     private fun skyrimProcessRunning(): Boolean = engineProcesses().first
+    /** For the exit watch: a /proc it can't list never counts as the game gone. */
+    private fun skyrimMaybeRunning(): Boolean = File("/proc").list() == null || skyrimProcessRunning()
 
     /** (Skyrim or its SKSE loader is running, the engine's launcher winhandler.exe is running), from /proc. */
     private fun engineProcesses(): Pair<Boolean, Boolean> {
@@ -804,7 +806,7 @@ object SkyrimEngine {
             while (launchToken == token) {
                 delay(GameExitWatch.CHECK_MS)
                 if (launchToken != token) break
-                val s = GameExitWatch.step(goneSince, skyrimProcessRunning(), closedByUs || quitHandledFor == token, System.currentTimeMillis())
+                val s = GameExitWatch.step(goneSince, skyrimMaybeRunning(), closedByUs || quitHandledFor == token, System.currentTimeMillis())
                 goneSince = s.goneSince
                 if (!s.died) continue
                 val at = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US).format(java.util.Date(goneSince))
