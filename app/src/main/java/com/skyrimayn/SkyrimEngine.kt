@@ -607,7 +607,9 @@ object SkyrimEngine {
         c.saveData()
         // Wine's log (Android/data/<package>/files/wine_logs): always in debug builds, and in release builds when the
         // player turns on WINE LOG (Launcher › Advanced) so a bug report carries it.
-        PrefManager.enableWineDebug = WineLog.wanted(app.gamenative.BuildConfig.DEBUG, LauncherSettings.get(LauncherSettings.wineLog))
+        val wineLog = WineLog.wanted(app.gamenative.BuildConfig.DEBUG, LauncherSettings.get(LauncherSettings.wineLog))
+        PrefManager.enableWineDebug = wineLog
+        if (!wineLog) WineLog.clear(WineLog.dir(context))
         Timber.i("SkyrimAYN: container configured: driver=$driver emulator=${c.emulator} screen=${c.screenSize}")
     }
 

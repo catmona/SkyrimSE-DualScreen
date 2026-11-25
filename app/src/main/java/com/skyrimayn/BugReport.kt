@@ -82,6 +82,7 @@ object BugReport {
         appendLine("RAM ${memory.totalMem / (1024 * 1024)} MB")
         appendLine("SKSE installed: ${GameFolder.modded()?.let { SkyrimEngine.skseInstalled(it) } == true}")
         GameFolder.modded()?.let(SkyrimEngine::skseProblem)?.let { appendLine("SKSE problem: $it") }
+        appendLine("Wine log: " + WineLog.forReport(WineLog.dir(ctx)).joinToString { "${it.name} ${it.length()} bytes" }.ifEmpty { "none" })
         appendLine()
         LauncherSettings.values.value.toSortedMap().forEach { (k, v) -> appendLine("$k = $v") }
         appendLine()
@@ -134,7 +135,10 @@ object BugReport {
                         add(if (f.name in main) f.name else "mod-logs/${f.name}", f.readBytes().takeLast(if (f.name in main) MAX_LOG_BYTES else MAX_MOD_LOG_BYTES).toByteArray().decodeToString())
                     }
                     // Wine's own log, when WINE LOG is on (or in a debug build): this game's and the one before.
-                    WineLog.forReport(WineLog.dir(ctx)).forEach { add("wine/${it.name}", WineLog.tail(it, MAX_LOG_BYTES)) }
+                    // One that can't be read is named instead, so the rest of the report still goes.
+                    WineLog.forReport(WineLog.dir(ctx)).forEach { f ->
+                        add("wine/${f.name}", runCatching { WineLog.tail(f, MAX_LOG_BYTES) }.getOrElse { "Couldn't read ${f.name}: $it" })
+                    }
                 }
                 // A copy beside the mods, so a report can be fetched from the Thor without the share sheet.
                 game?.let { runCatching { out.copyTo(File(it, "SkyrimAYN/last-report.zip"), overwrite = true) } }

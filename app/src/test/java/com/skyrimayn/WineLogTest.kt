@@ -34,6 +34,14 @@ class WineLogTest {
         assertEquals("kept", File(dir, WineLog.PREVIOUS).readText())
     }
 
+    @Test fun turnedOff_theOldLogsGo() {
+        val dir = tmp.newFolder("wine_logs")
+        File(dir, WineLog.NAME).writeText("with it on")
+        File(dir, WineLog.PREVIOUS).writeText("before that")
+        WineLog.clear(dir)
+        assertTrue(WineLog.forReport(dir).isEmpty())
+    }
+
     @Test fun aReportTakesThisGamesLogFirst_andSkipsEmptyOnes() {
         val dir = tmp.newFolder("wine_logs")
         assertTrue(WineLog.forReport(dir).isEmpty())

@@ -26,6 +26,12 @@ object WineLog {
         if (!log.renameTo(previous)) log.delete()
     }
 
+    /** WINE LOG is off: the logs from games played with it on go, so a report never passes them off as this game's. */
+    fun clear(dir: File) {
+        File(dir, NAME).delete()
+        File(dir, PREVIOUS).delete()
+    }
+
     /** The logs a bug report includes: this game's, then the one before. */
     fun forReport(dir: File): List<File> = listOf(File(dir, NAME), File(dir, PREVIOUS)).filter { it.isFile && it.length() > 0 }
 
