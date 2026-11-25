@@ -70,10 +70,12 @@ object SksePlugins {
     private val OLD_ENTRY_POINTS = setOf("SKSEPlugin_Query", "SKSEPlugin_Load")
 
     /** Unreadable or non-DLL files, and DLLs that aren't SKSE plugins, aren't judged (false). */
-    fun isOldBuild(dll: File): Boolean {
-        val info = read(dll) ?: return false
-        val v = info.version ?: return info.exports.any { it in OLD_ENTRY_POINTS }
-        if (dll.name.equals(ENGINE_FIXES, true) || v.name.equals("EngineFixes", true)) {
+    fun isOldBuild(dll: File): Boolean = read(dll)?.let { isOldBuild(it, dll.name) } ?: false
+
+    internal fun isOldBuild(info: Info, fileName: String): Boolean {
+        // SKSEPlugin_Version whose data we can't read: a current plugin all the same, so SKSE judges it, not us.
+        val v = info.version ?: return "SKSEPlugin_Version" !in info.exports && info.exports.any { it in OLD_ENTRY_POINTS }
+        if (fileName.equals(ENGINE_FIXES, true) || v.name.equals("EngineFixes", true)) {
             // Listed for nothing newer than 1.6.1170 and not marked for the 1.7.99+ Address Library: 7.0.20 and
             // older. (The 7.0.21 beta lists just 1.7.99, without the flag, and works on 1.7.104.)
             return v.compatible.none { it >= RUNTIME_1_7_99 } && v.independenceEx and ADDRESS_LIBRARY_V5 == 0 &&
