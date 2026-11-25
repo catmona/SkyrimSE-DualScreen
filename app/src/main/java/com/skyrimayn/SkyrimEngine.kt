@@ -618,7 +618,7 @@ object SkyrimEngine {
         val skyrim = n.equals("Skyrim Special Edition", true) || c.equals("Skyrim Special Edition", true) ||
             c.contains("skyrimse", true)
         if (skyrim && !n.contains("skse64_loader", true)) {
-            if (!_gameWindow.value) BottomScreenHost.ensureTopFocus()
+            if (!_gameWindow.value) { BottomScreenHost.ensureTopFocus(); watchGameProcess(launchToken) }
             _gameWindow.value = true
             // Remember right away: sessions usually end with the app closed, not a clean exit.
             if (!everStarted()) appCtx?.getSharedPreferences("launcher", 0)?.edit()?.putBoolean("ever_started", true)?.apply()
@@ -791,6 +791,30 @@ object SkyrimEngine {
         quitHandledFor = launchToken
         Timber.i("SkyrimAYN: Quit chosen in the game's menu; closing")
         quitGame()
+    }
+
+    /**
+     * While the game is on screen: if SkyrimSE.exe ends on its own ([GameExitWatch]), close the engine and say so,
+     * like a crash with an exit status, instead of leaving the player on a frozen screen.
+     */
+    private fun watchGameProcess(token: Long) {
+        if (token == 0L) return
+        scope.launch {
+            var goneSince = 0L
+            while (launchToken == token) {
+                delay(GameExitWatch.CHECK_MS)
+                if (launchToken != token) break
+                val s = GameExitWatch.step(goneSince, skyrimProcessRunning(), closedByUs || quitHandledFor == token, System.currentTimeMillis())
+                goneSince = s.goneSince
+                if (!s.died) continue
+                val at = java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US).format(java.util.Date(goneSince))
+                Timber.w("SkyrimAYN: SkyrimSE.exe ended on its own at $at while the game was on screen; closing the engine")
+                fail("Skyrim closed unexpectedly", "Skyrim closed unexpectedly. If it keeps happening, try turning PLAY WITH MODS off, or tap SEND REPORT.",
+                    "SkyrimSE.exe ended on its own at $at, no exit status")
+                quitGame()
+                break
+            }
+        }
     }
 
     fun dropItem(formId: Int, count: Int) = Link.send(Proto.CMD_DROP_ITEM, formId, count)
