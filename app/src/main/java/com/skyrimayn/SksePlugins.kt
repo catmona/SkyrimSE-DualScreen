@@ -6,7 +6,9 @@ import java.io.RandomAccessFile
 /**
  * SKSE plugins built for an older Skyrim, found by reading the DLL itself (what SKSE reads), whatever the Nexus file
  * or installer option was called:
- *  - no `SKSEPlugin_Version` export: a build for Skyrim 1.5.97 or older. SKSE skips it ("no version data").
+ *  - SKSE's older entry points (`SKSEPlugin_Query` / `SKSEPlugin_Load`) without `SKSEPlugin_Version`: a build for
+ *    Skyrim 1.5.97 or older. SKSE skips it ("no version data"). A DLL with none of SKSE's exports isn't a plugin at
+ *    all but a helper another plugin loads by itself (Crash Logger's msdia140.dll), so it's left alone.
  *  - SSE Engine Fixes built for 1.6.1170 (7.0.20 and older): SKSE loads it, but Skyrim 1.7.99+ changed the Address
  *    Library format and it quits Skyrim with "failed to find offset for address library id". 1.7 needs 7.0.21+.
  * Engine Fixes is the dangerous one either way: its Part 2 preloader loads EngineFixes.dll by itself, before SKSE
@@ -64,10 +66,13 @@ object SksePlugins {
 
     private const val OFF = ".off-older-skyrim"
 
-    /** Unreadable or non-DLL files aren't judged (false). */
+    /** What plugins for Skyrim 1.5.97 and older export instead of SKSEPlugin_Version. */
+    private val OLD_ENTRY_POINTS = setOf("SKSEPlugin_Query", "SKSEPlugin_Load")
+
+    /** Unreadable or non-DLL files, and DLLs that aren't SKSE plugins, aren't judged (false). */
     fun isOldBuild(dll: File): Boolean {
         val info = read(dll) ?: return false
-        val v = info.version ?: return true
+        val v = info.version ?: return info.exports.any { it in OLD_ENTRY_POINTS }
         if (dll.name.equals(ENGINE_FIXES, true) || v.name.equals("EngineFixes", true)) {
             // Listed for nothing newer than 1.6.1170 and not marked for the 1.7.99+ Address Library: 7.0.20 and
             // older. (The 7.0.21 beta lists just 1.7.99, without the flag, and works on 1.7.104.)
