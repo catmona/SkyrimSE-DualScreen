@@ -1788,8 +1788,14 @@ fun XServerScreen(
                 false
             }
         } else {
-            var handled = false
-            if (isGamepad) {
+            // SkyrimSE-DualScreen: pad A / B answer a Windows message box (Enter / Escape), which never reads the pad.
+            var handled = isGamepad && ui.xServerView!!.getxServer().let { xs ->
+                com.skyrimayn.WineDialogs.onPadKey(
+                    it.event.keyCode, it.event.action == KeyEvent.ACTION_DOWN, it.event.repeatCount,
+                    xs::injectKeyPress, xs::injectKeyRelease,
+                )
+            }
+            if (isGamepad && !handled) {
                 val winHandler = ui.xServerView!!.getxServer().winHandler
                 if (it.event.action == KeyEvent.ACTION_DOWN && it.event.repeatCount == 0 &&
                     ControllerManager.getInstance().noteGamepadButton(it.event.device.id)
@@ -2410,6 +2416,7 @@ fun XServerScreen(
                                         "\n\tchildrenSize: ${window.children.size}",
                             )
                             refreshFrameRatingTracking("map-window")
+                            com.skyrimayn.WineDialogs.refresh(getxServer())
                             ui.win32AppWorkarounds?.applyWindowWorkarounds(window)
                             onWindowMapped?.invoke(context, window)
                         }
@@ -2426,21 +2433,25 @@ fun XServerScreen(
                                         "\n\tchildrenSize: ${window.children.size}",
                             )
                             refreshFrameRatingTracking("unmap-window")
+                            com.skyrimayn.WineDialogs.refresh(getxServer())
                             startExitWatchForUnmappedGameWindow(window)
                             onWindowUnmapped?.invoke(window)
                         }
 
                         override fun onChangeWindowZOrder(window: Window) {
                             refreshFrameRatingTracking("z-order")
+                            com.skyrimayn.WineDialogs.refresh(getxServer())
                         }
 
                         override fun onUpdateWindowGeometry(window: Window, resized: Boolean) {
+                            if (resized) com.skyrimayn.WineDialogs.refresh(getxServer())
                             if (resized && getxServer().isDesktopWindow(window)) refreshTouchTransform()
                             if (window.id == frameRatingWindowId || window.isApplicationWindow()) {
                                 refreshFrameRatingTracking(if (resized) "geometry-resize" else "geometry-move")
                             }
                         }
                     }
+                com.skyrimayn.WineDialogs.reset()
                 getxServer().windowManager.addOnWindowModificationListener(wmListener)
                 ui.windowModificationListener = wmListener
                 mainRoot.tag = XServerViewReleaseBinding(this, wmListener, screenWidth = screenWidth)

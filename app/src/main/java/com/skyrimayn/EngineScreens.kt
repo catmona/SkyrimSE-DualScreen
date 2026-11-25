@@ -128,13 +128,16 @@ fun LaunchCurtain() {
         if (Link.state.value.status != LinkStatus.LIVE) { lifted = true; return@LaunchedEffect }
         delay(90_000); lifted = true
     }
-    androidx.compose.animation.AnimatedVisibility(!lifted, enter = androidx.compose.animation.fadeIn(),
+    // What's happening, so a long first boot never looks stuck; and a tip, like the game's loading screens.
+    // Counted out here so a message box showing through (below) doesn't restart them.
+    var seconds by remember { mutableStateOf(0) }
+    var windowAt by remember { mutableStateOf(-1) }
+    LaunchedEffect(Unit) { while (!lifted) { delay(1000); seconds++ } }
+    LaunchedEffect(shown) { if (shown && windowAt < 0) windowAt = seconds }
+    // A message box from the game shows through, so it can be read and closed with the pad's A or B.
+    val messageBox by WineDialogs.up.collectAsState()
+    androidx.compose.animation.AnimatedVisibility(!lifted && !messageBox, enter = androidx.compose.animation.fadeIn(),
         exit = androidx.compose.animation.fadeOut(androidx.compose.animation.core.tween(500))) {
-        // What's happening, so a long first boot never looks stuck; and a tip, like the game's loading screens.
-        var seconds by remember { mutableStateOf(0) }
-        var windowAt by remember { mutableStateOf(-1) }
-        LaunchedEffect(Unit) { while (true) { delay(1000); seconds++ } }
-        LaunchedEffect(shown) { if (shown && windowAt < 0) windowAt = seconds }
         val stage = when {
             windowAt >= 0 && seconds - windowAt > 40 ->
                 if (first) "First launch: building shaders for your device. This takes a few minutes, only once."
