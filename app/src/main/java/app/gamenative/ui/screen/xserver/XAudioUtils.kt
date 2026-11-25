@@ -60,10 +60,14 @@ object XAudioUtils {
         // Check the common path first, otherwise scan the game dir for DXSETUP.exe
         var directXDir = File(appDirPath, "_CommonRedist/DirectX")
         if (!directXDir.exists()) {
+            val appPath = appDir.toPath()
             val dxSetupFile = FileUtils.findFilesRecursive(
-                rootPath = appDir.toPath(),
+                rootPath = appPath,
                 pattern = "DXSETUP.exe",
                 maxDepth = 5,
+                // The game's Data folder holds its assets and every installed mod (tens of thousands of files), never
+                // a redistributable.
+                skipDirectory = { it.parent == appPath && it.fileName.toString().equals("Data", ignoreCase = true) },
             ).findFirst().orElse(null)
 
             if (dxSetupFile != null) {
